@@ -46,6 +46,19 @@ const char *show_flags(Flags self) {
 - [ ] Specify a prefix for your library or application
 - [ ] Specify whether to use snake_case or camelCase
 
+## Installation
+
+Grab a binary from the [releases page](https://github.com/aloussase/show-enum/releases), or build from
+source:
+
+```bash
+git clone https://github.com/aloussase/show-enum
+cd show-enum
+cargo build --release
+```
+
+You can find your binary in `target/release/show-enum`.
+
 ## License
 
 MIT
