@@ -37,6 +37,7 @@ const char *show_flags(Flags self) {
 ## Features
 
 - Generate function to display your enums
+- File contains more than just your enum? Use the `--start` and `--end` arguments to specify where is it!
 - Blazingly fast 🔥
 - Zero-allocation: all allocations come from reading the input file and printing to stdout
 
