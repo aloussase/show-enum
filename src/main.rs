@@ -18,11 +18,11 @@ fn main() {
         options.filename.as_str()
     ));
 
-    let start = options.start.map(|start| start as usize).unwrap_or(0);
+    let start = options.start.map(|start| start as usize).unwrap_or(1);
     let end = options
         .end
         .map(|end| end as usize)
-        .unwrap_or(contents.len());
+        .unwrap_or(contents.chars().filter(|c| *c == '\n').count());
 
     let lines: String = contents
         .lines()
