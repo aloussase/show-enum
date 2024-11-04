@@ -1,26 +1,24 @@
 use core::panic;
 use std::fmt::Display;
 
-use arraystring::{typenum::U50, ArrayString};
-
-type EnumTag = ArrayString<U50>;
-type EnumAlias = ArrayString<U50>;
-type EnumVariant = ArrayString<U50>;
+type EnumTag<'a> = &'a str;
+type EnumAlias<'a> = &'a str;
+type EnumVariant<'a> = &'a str;
 
 #[derive(Debug)]
-pub struct CEnum {
-    tag: EnumTag,
-    alias: EnumAlias,
-    variants: [EnumVariant; 50],
+pub struct CEnum<'a> {
+    tag: EnumTag<'a>,
+    alias: EnumAlias<'a>,
+    variants: [EnumVariant<'a>; 50],
     nvariants: u32,
 }
 
-impl Display for CEnum {
+impl Display for CEnum<'_> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let name = if self.alias.is_empty() {
-            self.tag.as_str()
+            self.tag
         } else {
-            self.alias.as_str()
+            self.alias
         };
 
         f.write_fmt(format_args!(
@@ -32,10 +30,9 @@ impl Display for CEnum {
         f.write_str("    switch (self) {\n")?;
 
         for variant in &self.variants[..self.nvariants as usize] {
-            let name = variant.as_str();
             f.write_fmt(format_args!(
                 "        case {}: return \"{}\";\n",
-                name, name
+                variant, variant
             ))?;
         }
 
@@ -44,7 +41,7 @@ impl Display for CEnum {
     }
 }
 
-impl Default for CEnum {
+impl Default for CEnum<'_> {
     fn default() -> Self {
         Self {
             tag: Default::default(),
@@ -55,8 +52,8 @@ impl Default for CEnum {
     }
 }
 
-impl CEnum {
-    pub fn parse(source: &str) -> Self {
+impl<'a> CEnum<'a> {
+    pub fn parse(source: &'a str) -> Self {
         let mut enum_: CEnum = Default::default();
         let mut next: u32;
         (enum_.tag, next) = CEnum::parse_tag(source, 0);
@@ -109,16 +106,13 @@ impl CEnum {
         }
 
         if next as usize - start > 0 {
-            (
-                EnumTag::try_from_str(&source[start..next as usize]).expect("failed to read alias"),
-                next,
-            )
+            (&source[start..next as usize], next)
         } else {
             (Default::default(), next)
         }
     }
 
-    fn parse_fields(source: &str, start: u32, enum_: &mut CEnum) -> u32 {
+    fn parse_fields(source: &'a str, start: u32, enum_: &mut CEnum<'a>) -> u32 {
         let mut next = CEnum::skip_ws(source, start);
         next = CEnum::expect(source, next, "{");
         next = CEnum::skip_ws(source, next);
@@ -140,10 +134,8 @@ impl CEnum {
                 next += 1;
             }
 
-            let name = &source[start..next as usize];
             enum_.nvariants += 1;
-            enum_.variants[ix] =
-                EnumVariant::try_from_str(name).expect("failed to read enum variant");
+            enum_.variants[ix] = &source[start..next as usize];
 
             next = CEnum::skip_ws(source, next);
 
@@ -177,8 +169,6 @@ impl CEnum {
             next += 1;
         }
 
-        let alias = &source[start..next as usize];
-
-        EnumAlias::try_from_str(alias).expect("failed to parse enum alias")
+        &source[start..next as usize]
     }
 }

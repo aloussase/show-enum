@@ -1,10 +1,8 @@
 use core::panic;
 
-use arraystring::{typenum::U20, ArrayString};
-
 #[derive(Debug)]
 pub struct Options {
-    pub filename: ArrayString<U20>,
+    pub filename: String,
     pub start: Option<u32>,
     pub end: Option<u32>,
 }
@@ -24,7 +22,7 @@ impl Options {
         let mut options = Options::default();
         let mut filename_set = false;
 
-        while let Some(ref arg) = cmdline.next() {
+        while let Some(arg) = cmdline.next() {
             match arg.as_ref() {
                 "--start" | "-s" => {
                     if let Some(ref start) = cmdline.next() {
@@ -44,10 +42,9 @@ impl Options {
                             .into();
                     }
                 }
-                filename if !filename_set => {
+                _ if !filename_set => {
                     filename_set = true;
-                    options.filename =
-                        ArrayString::try_from_str(&filename).expect("failed to parse filename");
+                    options.filename = arg;
                 }
                 _ => {
                     panic!("usage: show-enum [--start] [--end] <filename>");
